@@ -5,7 +5,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import java.util.List;
+
 
 @Transactional
 @Repository
@@ -23,13 +25,24 @@ public class PersonalDataDao {
     }
 
     public List getPersonalDataList(List<String> firstNames, List<String> lastNames, List<String> jobs, List<String> emailAddresses) {
-        String query = new PersonalDataQueryBuilder(firstNames, lastNames, jobs, emailAddresses).buildQuery();
+        String queryString = new PersonalDataQueryBuilder(firstNames, lastNames, jobs, emailAddresses).buildQuery();
+        Query query =entityManager.createQuery(queryString);
+        if (firstNames != null){
+            query.setParameter("firstNames", firstNames);
+        }
 
+        if (lastNames != null){
+            query.setParameter("lastNames", lastNames);
+        }
 
-        return entityManager.createQuery("select pd from PersonalData pd where " + query)
-                .setParameter("firstNames", firstNames).setParameter("lastNames", lastNames)
-                .setParameter("jobs", jobs).setParameter("emailAddresses", emailAddresses).getResultList();
+        if (jobs != null){
+            query.setParameter("jobs", jobs);
+        }
 
+        if (emailAddresses != null){
+            query.setParameter("emailAddresses", emailAddresses);
+        }
+        return query.getResultList();
     }
 
     public void deletePersonalData(Long id) {
